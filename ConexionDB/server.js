@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const path = require('path');  
+const path = require('path');  // Asegúrate de importar el módulo 'path'
 
 //const SerialPort = require('serialport');
 //const Readline = require('@serialport/parser-readline');
@@ -21,10 +21,10 @@ app.get('/', (req, res) => {
 
 // Configuración de la conexión a la base de datos
 const db = mysql.createConnection({
-  host: 'localhost', 
+  host: 'localhost',
   user: 'root',
-  password: '12345', //contrasena de la db
-  database: 'prueba', // nombre de la db
+  password: '12345',
+  database: 'prueba',
 });
 
 // Conexión a la base de datos
@@ -36,7 +36,6 @@ db.connect((err) => {
     }
   });
   
-  // Consulta a la tabla ingresos
   app.get('/usuarios', (req, res) => {
     db.query('SELECT * FROM Ingresos', (err, result) => {
       if (err) {
@@ -49,8 +48,6 @@ db.connect((err) => {
 
   });
 
-
-  //Consulta a la tabla egresos
   app.get('/egresos', (req, res) => {
     db.query('SELECT * FROM Egresos', (err, result) => {
       if (err) {
@@ -64,34 +61,11 @@ db.connect((err) => {
   });
 
   //Conteo de ingresos y egresos para el día actual
-  app.get('/conteoIngresosRangoFechas', (req, res) => {
-    const { fechaInicio, fechaFin } = req.query;
+  app.get('/conteoIngresosEgresosFechas', (req, res) => {
+    //Se recibe el rango de fechas desde react
+    const { fechaInicio, fechaFin } = req.query; // Enviar con formato YYYY/MM/DD
     //Para la fecha de hoy, seleccionar la misma fecha en los limites del rango
-    db.query(`
-    SELECT
-    fecha,
-    hora,
-    SUM(total_ingresos) AS total_ingresos,
-    SUM(total_egresos) AS total_egresos
-    FROM (
-    SELECT fecha, hora, SUM(total_ingresos) AS total_ingresos, SUM(total_egresos) AS total_egresos
-    FROM (
-        SELECT DATE_FORMAT(fecha_ingreso, '%Y-%m-%d') AS fecha, DATE_FORMAT(hora_ingreso, '%H:%i') AS hora, COUNT(*) AS total_ingresos, 0 AS total_egresos
-        FROM Ingresos
-        WHERE fecha_ingreso BETWEEN ? AND ?
-        GROUP BY fecha, hora
-
-        UNION ALL
-
-        SELECT DATE_FORMAT(fecha_egreso, '%Y-%m-%d') AS fecha, DATE_FORMAT(hora_egreso, '%H:%i') AS hora, 0 AS total_ingresos, COUNT(*) AS total_egresos
-        FROM Egresos
-        WHERE fecha_egreso BETWEEN ? AND ?
-        GROUP BY fecha, hora
-    ) AS union_table
-    GROUP BY fecha, hora
-    ) AS totals
-    GROUP BY fecha, hora;
-    `, [fechaInicio, fechaFin], (err, result) => {
+    db.query('call Consultar_Ingresos_Egresos(?,?);', [fechaInicio, fechaFin], (err, result) => {
       if (err) {
         console.error('Error al obtener conteo de ingresos y egresos por rango de fecha:', err);
         res.status(500).send('Error al obtener el conteo de ingresos y egresos de hoy por rango de fecha');
@@ -105,21 +79,11 @@ db.connect((err) => {
   //2 Trabajadores
   //3 Catedraticos
   //4 Otros
-  //Suponiendo que desde el arduino, la db se llena con esos ids al registrar el color
-  app.get('/ingresosRolRangoFechas', (req, res) => {
-    const { fechaInicio, fechaFin} = req.query;
+  app.get('/vehiculosRolRangoFechas', (req, res) => {
+    //Se recibe el rango de fechas desde react
+    const { fechaInicio, fechaFin} = req.query; // Enviar con formato YYYY/MM/DD
     
-    db.query(`
-      SELECT 
-        fecha_ingreso AS fecha,
-        SUM(CASE WHEN id_rol = 1 THEN 1 ELSE 0 END) AS Estudiantes,
-        SUM(CASE WHEN id_rol = 2 THEN 1 ELSE 0 END) AS Trabajadores,
-        SUM(CASE WHEN id_rol = 3 THEN 1 ELSE 0 END) AS Catedraticos,
-        SUM(CASE WHEN id_rol = 4 THEN 1 ELSE 0 END) AS Ajenos
-      FROM Ingreso
-      WHERE fecha_ingreso BETWEEN ? AND ?
-      GROUP BY fecha_ingreso;
-    `, [fechaInicio, fechaFin], (err, result) => {
+    db.query('call Vehiculos_Por_Rol_Intervalo_Fechas(?,?);', [fechaInicio, fechaFin], (err, result) => {
       if (err) {
         console.error('Error al obtener conteo de ingresos por fecha y rol:', err);
         res.status(500).send('Error al obtener el conteo de ingresos por fecha y rol');
@@ -129,23 +93,14 @@ db.connect((err) => {
     });
   });
 
-
   //1 Personal
   //2 Mediano
   //3 Grande
-  app.get('/ingresosPersonasRangoFechas', (req, res) => {
-    const { fechaInicio, fechaFin } = req.query;
+  app.get('/sumaPersonasRangoFechas', (req, res) => {
+    //Se recibe el rango de fechas desde react
+    const { fechaInicio, fechaFin } = req.query; // Enviar con formato YYYY/MM/DD
     
-    db.query(`
-    SELECT 
-      fecha_ingreso AS fecha,
-      SUM(CASE WHEN id_vehiculo = 1 THEN 1 ELSE 0 END) AS Personal,
-      SUM(CASE WHEN id_vehiculo = 2 THEN 1 ELSE 0 END) AS Mediano,
-      SUM(CASE WHEN id_vehiculo = 3 THEN 1 ELSE 0 END) AS Grande
-    FROM Ingreso
-    WHERE fecha_ingreso BETWEEN ? AND ?
-    GROUP BY fecha_ingreso;
-    `, [fechaInicio, fechaFin], (err, result) => {
+    db.query('call Suma_personas_porIntervaloFechas(?,?);', [fechaInicio, fechaFin], (err, result) => {
       if (err) {
         console.error('Error al obtener conteo de personas por fecha:', err);
         res.status(500).send('Error al obtener el conteo de personas por fecha');
