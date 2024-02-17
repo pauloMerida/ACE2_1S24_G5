@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Chart from 'react-apexcharts';
 import './style.css'; // Importa el archivo CSS de estilos
+import DatePicker from 'react-datepicker'; // Importa el componente DatePicker
+import 'react-datepicker/dist/react-datepicker.css'; // Importa los estilos del DatePicker
 
 function App() {
 
@@ -18,89 +20,75 @@ function App() {
   const [totalEgresos,setTotalEgresos] = useState(0)
   const [lugaresOcupados, setLugaresOcupados] = useState(0);
   const [lugaresLibres, setLugaresLibres] = useState(0);
-  
+ 
+  const [fechaInicial, setFechaInicial] = useState(null);
+  const [fechaFinal, setFechaFinal] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/usuarios')
-      .then(response => {
-        const ingresosData = response.data;
-        //const { usuarios, otraTabla } = response.data;
-        //setIngresos(tablaIngresos);
-        //setTablaEgresos(tablaEgresos)
-        
-        
-        //alert(200-(totalIngresos-totalEgresos))
+    Promise.all([
+      axios.get('http://localhost:3000/usuarios'), //consulta a los ingresos 
+      fetch('http://localhost:3000/egresos').then(response => response.json()) //consulta a la tabla egresos
+    ])
+      .then(([usuariosResponse, egresosData]) => {
+        const ingresosData = usuariosResponse.data;
+  
+        //Verifical el rol de cada ingreso para la grafica personas por vehiculo 
 
-        //setOtraTabla(otraTabla);
-        // Contar cuántos "Sí" y "No" hay
         const conteoValores = ingresosData.reduce((acc, tablaIngresos) => {
-          //acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 1;
-          if  (tablaIngresos.tipo_vehiculo === 'Personal'){
-            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 1
-
-          }else if (tablaIngresos.tipo_vehiculo === 'Mediano'){
-            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 2
-          }else{
-            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 4
+          if (tablaIngresos.tipo_vehiculo === 'Personal') {
+            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 1;
+          } else if (tablaIngresos.tipo_vehiculo === 'Mediano') {
+            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 2;
+          } else {
+            acc[tablaIngresos.tipo_vehiculo] = (acc[tablaIngresos.tipo_vehiculo] || 0) + 4;
           }
-
-
           return acc;
         }, {});
-
-
-        const conteoRol = ingresosData.reduce((acc, tablaIngresos) => {
-         // const s = acc[tablaEgresos.rol_vehiculo] = (acc[tablaEgresos.rol_vehiculo] || 0) + 1
-          acc[tablaIngresos.rol_vehiculo] = (acc[tablaIngresos.rol_vehiculo] || 0) + 1 ;
-
+  
+        // Crear un conjunto de todos los roles presentes en ingresosData
+        const rolesEnIngresos = new Set(ingresosData.map(tablaIngresos => tablaIngresos.rol_vehiculo));
+  
+        // Inicializar el conteoRol con 0 para todos los roles en ingresosData
+        const conteoRol = Array.from(rolesEnIngresos).reduce((acc, rol) => {
+          acc[rol] = 0;
           return acc;
         }, {});
-
-
-        console.log('Conteo de valores:', conteoValores);
-
-
-
-        const totalIngresos = ingresosData.length
-        const totalEgresos = tablaEgresos.length
-        setTotalIngresos(totalIngresos)
-        setTotalEgresos(totalEgresos)
-
+  
+        // Contar cuántas veces cada rol está presente en ingresosData
+        ingresosData.forEach(tablaIngresos => {
+          const rolActual = tablaIngresos.rol_vehiculo;
+          conteoRol[rolActual] += 1;
+        });
+  
+        // Restar cuántas veces cada rol está presente en egresosData
+        egresosData.forEach(tablaEgresos => {
+          const rolActual = tablaEgresos.rol_vehiculo;
+          conteoRol[rolActual] -= 1;
+        });
+  
+        const totalIngresos = ingresosData.length;
+        const totalEgresos = egresosData.length;
+        setTotalIngresos(totalIngresos);
+        setTotalEgresos(totalEgresos);
+  
         const lugaresOcupados = totalIngresos - totalEgresos;
         const lugaresLibres = 200 - lugaresOcupados;
-        setLugaresOcupados(lugaresOcupados)
-        setLugaresLibres(lugaresLibres)
+        setLugaresOcupados(lugaresOcupados);
+        setLugaresLibres(lugaresLibres);
+  
         setCargandoDatos(false); // Marcar como completado la carga de datos
-
-        //alert(totalIngresos)
-        //alert(totalEgresos)
-        
-
+  
         setIngresos(ingresosData);
-        
-       
+        setTablaEgresos(egresosData);
         setConteo(conteoValores);
-        setConteoRol(conteoRol)
-        
+        setConteoRol(conteoRol);
       })
-      .catch(error => {
-        console.error('Error al obtener usuarios:', error);
+      .catch(errors => {
+        console.error('Error en alguna de las solicitudes:', errors);
         setCargandoDatos(false); // Marcar como completado
       });
-
-      fetch('http://localhost:3000/egresos')
-      .then(response => response.json())
-      .then(data => setTablaEgresos(data));
+  }, [fechaInicial, fechaFinal]);
       
-      
-
-      
-
-
-
-  }, []);
-
-
   
  
 
@@ -116,6 +104,33 @@ function App() {
   const pestana = () => {
 
   };
+
+  const opcionesGraficaLineas = {
+    // Configuración de opciones de la gráfica de líneas
+  
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeFormatter: {
+          year: 'yyyy',
+          month: 'MMM \'yy',
+          day: 'dd MMM',
+        },
+      },
+    },
+  };
+
+  const seriesGraficaLineas = [
+    {
+      name: 'Ingresos',
+      data: tablaIngresos.map(ingreso => ({ x: new Date(ingreso.fecha).getTime(), y: 1 })),
+    },
+    {
+      name: 'Egresos',
+      data: tablaEgresos.map(egreso => ({ x: new Date(egreso.fecha).getTime(), y: -1 })),
+    },
+  ];
+
 
   
 
@@ -138,6 +153,7 @@ return (
 
   <div className="container" style={{ marginTop: mostrarBanner ? '60px' : '20px' }}>
   <div className="container">
+
 
 
     <div className='graph-container-right '>
@@ -246,6 +262,27 @@ return (
 
 
 
+
+  </div>
+
+  <div>
+   
+    <div className="date-picker-container">
+        <label>Fecha Inicial:</label>
+        <DatePicker selected={fechaInicial} onChange={date => setFechaInicial(date)} />
+        <label>Fecha Final:</label>
+        <DatePicker selected={fechaFinal} onChange={date => setFechaFinal(date)} />
+      </div>
+
+      {/* Agrega la gráfica de líneas */}
+      <div className="line-chart-container">
+        <Chart
+          options={opcionesGraficaLineas}
+          series={seriesGraficaLineas}
+          type="line"
+          width="100%"
+        />
+      </div>
 
   </div>
           

@@ -1,8 +1,9 @@
 
+
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-const path = require('path');  // Asegúrate de importar el módulo 'path'
+const path = require('path');  
 
 //const SerialPort = require('serialport');
 //const Readline = require('@serialport/parser-readline');
@@ -15,10 +16,10 @@ app.use(cors());
 
 // Configuración de la conexión a la base de datos
 const db = mysql.createConnection({
-  host: 'localhost',
+  host: 'localhost', 
   user: 'root',
-  password: '12345',
-  database: 'prueba',
+  password: '12345', //contrasena de la db
+  database: 'prueba', // nombre de la db
 });
 
 // Conexión a la base de datos
@@ -30,6 +31,7 @@ db.connect((err) => {
     }
   });
   
+  // Consulta a la tabla ingresos
   app.get('/usuarios', (req, res) => {
     db.query('SELECT * FROM Ingresos', (err, result) => {
       if (err) {
@@ -42,6 +44,8 @@ db.connect((err) => {
 
   });
 
+
+  //Consulta a la tabla egresos
   app.get('/egresos', (req, res) => {
     db.query('SELECT * FROM Egresos', (err, result) => {
       if (err) {
