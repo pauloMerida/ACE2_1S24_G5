@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './App.css'; // Importa tu archivo CSS con estilos personalizados
+import './App.css'; 
 import Heatmap from './Heatmap';
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
   };
 
   const handleSubmit = () => {
-    // Aquí puedes manejar la lógica cuando se presiona el botón "Enviar"
+    
     console.log(`Fecha de inicio: ${startDate}, Fecha de final: ${endDate}`);
   };
 
