@@ -1,0 +1,162 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+.date-container {
+  display: flex;
+  justify-content: space-between;
+  width: 450px; /* Ajusta el ancho total del contenedor */
+  margin-top: 20px;
+}
+
+.date-container input {
+  width: 48%; /* Ancho de los campos de entrada de fecha */
+  font-size: 16px; /* Tamaño de fuente */
+  padding: 8px; /* Ajusta el relleno interno para mejorar la apariencia */
+}
+
+.heatmap-container {
+  margin-top: 30px;
+  margin-left: 20px;
+}
+
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+.options-container {
+  margin-top: 20px; /* Añade un margen a la derecha para separarlo del mapa de calor */
+}
+
+/* Estilos para el ComboBox */
+.options-container select {
+  width: 200px; /* Define el ancho del ComboBox */
+  padding: 10px; /* Añade relleno interno para mejorar la apariencia */
+  font-size: 16px; /* Define el tamaño de la fuente */
+  border: 1px solid #ccc; /* Añade un borde alrededor del ComboBox */
+  border-radius: 5px; /* Añade esquinas redondeadas al ComboBox */
+  background-color: #f8f8f8; /* Define el color de fondo */
+  appearance: none; /* Elimina el estilo nativo del ComboBox */
+  outline: none; /* Elimina el contorno al enfocar el ComboBox */
+}
+
+/* Estilos para las opciones del ComboBox */
+.options-container select option {
+  background-color: #fff; /* Define el color de fondo de las opciones */
+  color: #333; /* Define el color del texto de las opciones */
+}
+
+.heatmap-container {
+  margin-top: 30px; /* Añade un margen superior para desplazar el mapa de calor hacia abajo */
+}
+
+/* Tu otro CSS */
+.App {
+  text-align: center;
+}
+
+/* Otros estilos que puedas tener */
+
+.options-container {
+  margin-top: 20px;
+}
+
+.options-container select {
+  width: 200px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+  appearance: none;
+  outline: none;
+}
+
+.options-container select option {
+  background-color: #fff;
+  color: #333;
+}
+
+.date-container {
+  display: flex;
+  flex-direction: column; /* Cambia la dirección de los elementos a columna */
+  align-items: center; /* Centra los elementos horizontalmente */
+  width: 400px;
+  margin-top: 20px;
+}
+
+.date-container label {
+  font-size: 16px;
+  margin-bottom: 5px; /* Añade un pequeño margen inferior */
+}
+
+.date-container input {
+  width: 100%; /* Ocupa todo el ancho disponible */
+  font-size: 16px;
+  padding: 8px;
+}
+
+.heatmap-container {
+  margin-top: 30px;
+  margin-left: 20px;
+}
+
+.submit-button {
+  font-size: 18px; /* Ajusta el tamaño de fuente del botón */
+  padding: 10px 20px; /* Ajusta el relleno del botón */
+}
+
+/* Estilos base */
+
+/* ... Otros estilos que puedas tener ... */
+
+/* Estilos para pantallas más pequeñas */
+@media screen and (max-width: 768px) {
+  .date-container {
+    width: 90%; /* Ajusta el ancho del contenedor de fechas para que ocupe el 90% del ancho disponible */
+    flex-direction: column; /* Cambia la dirección de los elementos a columna */
+    align-items: center; /* Centra los elementos horizontalmente */
+  }
+
+  .date-container input {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    margin-top: 10px; /* Añade un pequeño margen superior entre los campos de fecha */
+  }
+
+  .heatmap-container {
+    margin-top: 20px; /* Reduce el margen superior del contenedor del mapa de calor */
+  }
+}
